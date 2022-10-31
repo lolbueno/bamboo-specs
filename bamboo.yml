@@ -1,0 +1,226 @@
+---
+version: 2
+variables:
+ECR-URL-PREFIX: REDACTED
+plan:
+project-key: ML
+key: MLSAPI
+name: ML Services API
+stages:
+- Default Stage:
+description: Plan to build and test ML Services API
+manual: false
+final: false
+jobs:
+- Build and Run Tests
+
+Build and Run Tests:
+key: JOB1
+other:
+clean-working-dir: true
+tasks:
+- checkout:
+force-clean-build: 'false'
+description: Checkout Default Repository
+
+# - script:
+# interpreter: BINSH_OR_CMDEXE
+# scripts:
+# - |-
+# aws configure --profile QA set aws_access_key_id ${bamboo.Global.Aws.QA.ML.AwsAccessKeyId}
+# aws configure --profile QA set aws_secret_access_key ${bamboo.Global.Aws.QA.ML.AwsSecretAccessKey}
+# aws configure --profile QA set default.region us-east-1
+# description: Setup AWS Credentials
+# - script:
+# interpreter: BINSH_OR_CMDEXE
+# scripts:
+# - "./run.sh download-data"
+# description: Download NLU artifact
+# - script:
+# interpreter: BINSH_OR_CMDEXE
+# scripts:
+# - echo "${bamboo.planRepository.branchName}.${bamboo.buildNumber}" > version.txt
+# description: Save version information
+# - script:
+# interpreter: BINSH_OR_CMDEXE
+# scripts:
+# - cat version.txt
+# description: Show the written version information
+# - any-task:
+# plugin-key: com.atlassian.bamboo.plugins.bamboo-docker-plugin:task.docker.cli
+# configuration:
+# commandOption: build
+# repository: mlservicesapi:latest
+# dockerfileOption: existing
+# nocache: 'false'
+# save: 'false'
+# description: Build Docker Image
+# - any-task:
+# plugin-key: com.atlassian.bamboo.plugins.bamboo-docker-plugin:task.docker.cli
+# configuration:
+# commandOption: run
+# image: mlservicesapi:latest
+# detach: 'false'
+# serviceWait: 'false'
+# serviceUrlPattern: http://localhost:$\{docker.port}
+# serviceTimeout: '120'
+# link: 'false'
+# command: pytest --ignore tests/api --cov ./app ./tests --junitxml=/data/junit_result.xml
+# hostDirectory_0: ${bamboo.working.directory}
+# containerDataVolume_0: /data
+# description: Run Unit Tests and Coverage
+# - script:
+# interpreter: BINSH_OR_CMDEXE
+# scripts:
+# - |-
+# aws ecr get-login-password --region us-east-1 --profile QA | docker login --username AWS --password-stdin 773082502715.dkr.ecr.us-east-1.amazonaws.com
+# VERSION=$(echo "${bamboo.planRepository.branchName}.${bamboo.buildNumber}" | sed -e 's/.*\///')
+# docker tag mlservicesapi:latest ${bamboo.ECR-URL-PREFIX}:$VERSION
+# docker push ${bamboo.ECR-URL-PREFIX}:$VERSION
+# description: Login to docker tag and push to ECR
+- script:
+interpreter: BINSH_OR_CMDEXE
+scripts:
+- |-
+VERSION=$(echo "${bamboo.planRepository.branchName}.${bamboo.buildNumber}" | sed -e 's/.*\///')
+# docker build -t ${bamboo.ECR-URL-PREFIX}-redis:${VERSION} -f './redis.dockerfile' .
+# docker build -t ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION} -f './duckling.dockerfile' .
+# docker push ${bamboo.ECR-URL-PREFIX}-redis:${VERSION}
+# docker push ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION}
+echo ${bamboo.ECR-URL-PREFIX}:${VERSION} > docker-metadata.info
+echo ${bamboo.ECR-URL-PREFIX}-redis:${VERSION} >> docker-metadata.info
+echo ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION} >> docker-metadata.info
+description: Push duckling and Redis to ECR
+- script:
+interpreter: BINSH_OR_CMDEXE
+scripts:
+- docker images purge
+description: Remove Dangling Images
+# final-tasks:
+# - test-parser:
+# type: junit
+# ignore-time: 'false'
+# test-results: junit_result.xml
+# description: Parse Unit Tests
+artifacts:
+- name: Version Archive
+pattern: docker-metadata.info
+shared: true
+required: true
+- name: Deploy Scripts
+pattern: deploy/**/*.*
+shared: true
+required: true
+artifact-subscriptions: []
+repositories:
+- AbsorbLMS.MLServiceApi:
+scope: global
+triggers:
+- polling:
+period: '10'
+branches:
+create: for-new-branch
+delete:
+after-deleted-days: 7
+after-inactive-days: 90
+link-to-jira: true
+notifications:
+- events:
+- job-failed
+recipients:
+- committers
+- events:
+- job-hung
+recipients:
+- committers
+- events:
+- plan-completed
+recipients:
+- watchers
+- events:
+- plan-failed
+recipients:
+- committers
+labels: []
+other:
+concurrent-build-plugin: '5'
+---
+
+version: 2
+plan:
+key: ML-MLSAPI
+plan-permissions:
+- roles:
+- logged-in
+permissions:
+- view
+# - viewConfiguration
+- groups:
+- Team - Machine Learning
+- Dept - QA
+permissions:
+- view
+- build
+# - viewConfiguration
+---
+
+version: 2
+deployment:
+name: '2.9.1.1 QA - ML Services API App'
+source-plan: ML-MLSAPI
+release-naming: ${bamboo.planRepository.branchName}.${bamboo.buildNumber}
+environments:
+- MLQA5
+
+MLQA5:
+description: Deploys ML Services API App
+triggers: []
+tasks:
+- clean
+- artifact-download:
+artifacts:
+- name: Version Archive
+destination: /
+- name: Deploy Scripts
+destination: /deploy
+- command:
+executable: Powershell
+argument: "-file .\\deploy-task-definition.ps1\n -imageMetadataFile \"docker-metadata.info\"\n -loadBalancerName \"ALB-ECS-MlServices-5-qa\"\n -configurationEnvironmentName \"${bamboo.ConfigurationEnvironmentName}\"\n -AwsCliProfileName \"${bamboo.AwsCliProfileName}\"\n -ecsClusterName \"${bamboo.ClusterName}\"\n -memory 5120\n -cpu 1024\n -s3_Bucket \"aws-qa-absorblms-media-qat\"\n -desiredCount \"${bamboo.DesiredCount}\"\n "
+working-dir: deploy
+description: Deploy ML Services API
+final-tasks: []
+variables:
+AwsCliProfileName: awsqa
+ClusterName: ML-QA5
+ConfigurationEnvironmentName: Qa5
+DesiredCount: '2'
+requirements: []
+notifications:
+- events:
+- deployment-started-and-finished
+recipients:
+- emails:
+- qa.team@absorblms.com
+# Notification recipient com.moveworkforward.bamboo.microsoft-teams-notifier:recipient.microsoftteams is not supported yet
+---
+version: 2
+deployment:
+name: '2.9.1.1 QA - ML Services API App'
+deployment-permissions:
+- roles:
+- logged-in
+permissions:
+- view
+environment-permissions:
+- ML-QA5:
+- groups:
+- Team - Machine Learning
+- Dept - QA
+permissions:
+- view
+- deploy
+- roles:
+- logged-in
+permissions:
+- view
+...
