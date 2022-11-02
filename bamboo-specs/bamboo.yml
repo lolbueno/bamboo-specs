@@ -185,7 +185,7 @@ MLQA5:
             destination: /deploy
     - command:
         executable: Powershell
-        argument: "-file .deploy-task-definition.ps1n          -imageMetadataFile "docker-metadata.info"n          -loadBalancerName "ALB-ECS-MlServices-5-qa"n          -configurationEnvironmentName "${bamboo.ConfigurationEnvironmentName}"n          -AwsCliProfileName "${bamboo.AwsCliProfileName}"n          -ecsClusterName "${bamboo.ClusterName}"n          -memory 5120n          -cpu 1024n          -s3_Bucket "aws-qa-absorblms-media-qat"n          -desiredCount "${bamboo.DesiredCount}"n          "
+        argument: " "
         working-dir: deploy
         description: Deploy ML Services API
   final-tasks: []
