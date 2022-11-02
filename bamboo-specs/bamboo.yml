@@ -185,7 +185,7 @@ MLQA5:
             destination: /deploy
     - command:
         executable: Powershell
-        argument: " "
+        argument: "-argument
         working-dir: deploy
         description: Deploy ML Services API
   final-tasks: []
