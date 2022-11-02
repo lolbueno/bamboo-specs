@@ -156,8 +156,7 @@ plan-permissions:
   - view
   # - viewConfiguration
 - groups:
-  - Team - Machine Learning
-  - Dept - QA
+  - bamboo-admin
   permissions:
   - view
   - build
@@ -200,7 +199,7 @@ MLQA5:
     - deployment-started-and-finished
     recipients:
     - emails:
-      - qa.team@absorblms.com
+      - dummy@dummy.com
 # Notification recipient com.moveworkforward.bamboo.microsoft-teams-notifier:recipient.microsoftteams is not supported yet
 ---
 version: 2
@@ -214,8 +213,7 @@ deployment-permissions:
 environment-permissions:
 - ML-QA5:
   - groups:
-    - Team - Machine Learning
-    - Dept - QA
+    - bamboo-admin
     permissions:
     - view
     - deploy
