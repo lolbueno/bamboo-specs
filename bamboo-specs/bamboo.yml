@@ -28,3 +28,8 @@ Build:
   artifacts:
      - name: Red rocket built
        pattern: falcon/red/wings
+  
+ notifications:
+  - recipients:
+      - users:
+          - bamboo
