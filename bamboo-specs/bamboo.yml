@@ -112,9 +112,9 @@ Build and Run Tests:
       shared: true
       required: true
   artifact-subscriptions: []
-repositories:
+#repositories:
 # - AbsorbLMS.MLServiceApi:
-    scope: global
+#    scope: global
 triggers:
 - polling:
     period: '10'
