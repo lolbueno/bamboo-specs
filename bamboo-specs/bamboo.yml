@@ -78,40 +78,40 @@ Build and Run Tests:
   #       docker tag mlservicesapi:latest ${bamboo.ECR-URL-PREFIX}:$VERSION
   #       docker push ${bamboo.ECR-URL-PREFIX}:$VERSION
   #     description: Login to docker tag and push to ECR
-  - script:
-      interpreter: BINSH_OR_CMDEXE
-      scripts:
-      - |-
-        VERSION=$(echo "${bamboo.planRepository.branchName}.${bamboo.buildNumber}" | sed -e 's/.*///')
-        # docker build -t ${bamboo.ECR-URL-PREFIX}-redis:${VERSION} -f './redis.dockerfile' .
-        # docker build -t ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION} -f './duckling.dockerfile' .
-        # docker push ${bamboo.ECR-URL-PREFIX}-redis:${VERSION}
-        # docker push ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION}
-        echo ${bamboo.ECR-URL-PREFIX}:${VERSION} > docker-metadata.info
-        echo ${bamboo.ECR-URL-PREFIX}-redis:${VERSION} >> docker-metadata.info
-        echo ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION} >> docker-metadata.info
-      description: Push duckling and Redis to ECR
-  - script:
-      interpreter: BINSH_OR_CMDEXE
-      scripts:
-      - docker images purge
-      description: Remove Dangling Images
+  # - script:
+  #   interpreter: BINSH_OR_CMDEXE
+  #    scripts:
+  #    - |-
+  #      VERSION=$(echo "${bamboo.planRepository.branchName}.${bamboo.buildNumber}" | sed -e 's/.*///')
+  #      # docker build -t ${bamboo.ECR-URL-PREFIX}-redis:${VERSION} -f './redis.dockerfile' .
+  #      # docker build -t ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION} -f './duckling.dockerfile' .
+  #      # docker push ${bamboo.ECR-URL-PREFIX}-redis:${VERSION}
+  #      # docker push ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION}
+  #      echo ${bamboo.ECR-URL-PREFIX}:${VERSION} > docker-metadata.info
+  #      echo ${bamboo.ECR-URL-PREFIX}-redis:${VERSION} >> docker-metadata.info
+  #      echo ${bamboo.ECR-URL-PREFIX}-duckling:${VERSION} >> docker-metadata.info
+  #    description: Push duckling and Redis to ECR
+  #- script:
+  #    interpreter: BINSH_OR_CMDEXE
+  #    scripts:
+  #    - docker images purge
+  #    description: Remove Dangling Images
   # final-tasks:
   # - test-parser:
   #     type: junit
   #     ignore-time: 'false'
   #     test-results: junit_result.xml
   #     description: Parse Unit Tests
-  artifacts:
-    - name: Version Archive
-      pattern: docker-metadata.info
-      shared: true
-      required: true
-    - name: Deploy Scripts
-      pattern: deploy/**/*.*
-      shared: true
-      required: true
-  artifact-subscriptions: []
+  #artifacts:
+  #  - name: Version Archive
+  #    pattern: docker-metadata.info
+  #    shared: true
+  #    required: true
+  #  - name: Deploy Scripts
+  #    pattern: deploy/**/*.*
+  #    shared: true
+  #    required: true
+  #artifact-subscriptions: []
 #repositories:
 # - AbsorbLMS.MLServiceApi:
 #    scope: global
@@ -162,63 +162,3 @@ plan-permissions:
   - build
 #  - viewConfiguration
 ---
-
-version: 2
-deployment:
-  name: '2.9.1.1 QA - ML Services API App'
-  source-plan: ML-MLSAPI
-release-naming: ${bamboo.planRepository.branchName}.${bamboo.buildNumber}
-environments:
-  - MLQA5
-
-MLQA5:
-  description: Deploys ML Services API App
-  triggers: []
-  tasks:
-    - clean
-    - artifact-download:
-        artifacts:
-          - name: Version Archive
-            destination: /
-          - name: Deploy Scripts
-            destination: /deploy
-    - command:
-        executable: Powershell
-        argument: "-argument"
-        working-dir: deploy
-        description: Deploy ML Services API
-  final-tasks: []
-  variables:
-    AwsCliProfileName: awsqa
-    ClusterName: ML-QA5
-    ConfigurationEnvironmentName: Qa5
-    DesiredCount: '2'
-  requirements: []
-  notifications:
-  - events:
-    - deployment-started-and-finished
-    recipients:
-    - emails:
-      - dummy@dummy.com
-# Notification recipient com.moveworkforward.bamboo.microsoft-teams-notifier:recipient.microsoftteams is not supported yet
----
-version: 2
-deployment:
-  name: '2.9.1.1 QA - ML Services API App'
-deployment-permissions:
-- roles:
-  - logged-in
-  permissions:
-  - view
-environment-permissions:
-- ML-QA5:
-  - groups:
-    - bamboo-admin
-    permissions:
-    - view
-    - deploy
-  - roles:
-    - logged-in
-    permissions:
-    - view
-...
