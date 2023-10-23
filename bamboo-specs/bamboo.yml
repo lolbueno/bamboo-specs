@@ -33,3 +33,6 @@ Build:
   - recipients:
       - users:
           - bamboo
+  events:
+      - plan-failed
+      - job-error
