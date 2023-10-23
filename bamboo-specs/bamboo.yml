@@ -28,11 +28,10 @@ Build:
   artifacts:
      - name: Red rocket built
        pattern: falcon/red/wings
-  
- notifications:
+notifications:
   - recipients:
       - users:
           - bamboo
-  events:
+    events:
       - plan-failed
       - job-error
