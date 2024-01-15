@@ -15,13 +15,3 @@ build:
     name: GTO.resiliency-engineering
   template: FaasSimpleBuildPlanTemplate
 coordinatorGroup: CONTINUOUS DELIVERY
-
-isCd: true
-mcaRoles:
-  - ROL PRD SERVICENOW ASG GTO PRODUCTION ASSURANCE
-mcaRolesForProd:
-  - ROL PRD SERVICENOW ASG GTO PRODUCTION ASSURANCE
-primaryAwsAccount: OPS
-snowConfigurationItem: MO9-RESILIENCY ENGINEERING
-subdiv: GTO
-
