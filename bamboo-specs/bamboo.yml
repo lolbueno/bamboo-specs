@@ -25,39 +25,7 @@ build:
     name: GTO.resiliency-engineering
   template: FaasSimpleBuildPlanTemplate
 coordinatorGroup: CONTINUOUS DELIVERY
-deployment:
-  config:
-    addDeploySysLevelButtons: true
-    addDisableButtons: true
-    allowedBranches: master,release
-    buildAccount: OPS
-    deployEverywhere: false
-    descriptor: faas-lambda.yaml
-    locations:
-      OPS:
-        - us-east-1
-    productionConfig: CD
-    region: US_EAST_1
-    runConfigurations:
-      - name: test-payload
-        syslevel: ENG
-      - name: test-payload
-        syslevel: INT
-      - name: test-payload
-        syslevel: SAT
-    shouldAddDeleteEnvironments: true
-    subproject: query-servicenow-data-lake.lambda
-    testSysLevels:
-      - INT
-      - SAT
-    triggers:
-      - class: AfterSuccessfulBuildPlanTrigger
-        environmentsToTrigger:
-          - Deploy Lambda vgi-ops-int - us-east-1 - ENG
-          - Deploy Lambda vgi-ops-test - us-east-1 - INT
-          - Deploy Lambda vgi-ops-test - us-east-1 - SAT
-  name: query-servicenow-data-lake.lambda-MONO
-  template: FaasPipelineDeployPlanTemplate
+
 isCd: true
 mcaRoles:
   - ROL PRD SERVICENOW ASG GTO PRODUCTION ASSURANCE
