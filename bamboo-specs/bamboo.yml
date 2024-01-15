@@ -1,6 +1,6 @@
 version: 2
 
-      projectKey: MO9
+      project-key: MO9
     key: QSDLMONO
     name: query-servicenow-data-lake.lambda-MONO
   config:
