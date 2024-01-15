@@ -1,37 +1,68 @@
----
-version: 2
-plan:
-  project-key: MARS
-  key: ROCKET
-  name: Build the rockets
-
-# List of plan's stages and jobs
-stages:
-  - Build the rocket stage:
-    - Build
-
-#Job definition
-Build:
-  tasks:
-    - script:
-        - mkdir -p falcon/red
-        - echo wings > falcon/red/wings
-        - sleep 1
-        - echo 'Built it'
-    - test-parser:
-        type: junit
-        test-results: '**/junit/*.xml' 
-  # Job's requirements
-  requirements:
-     - isRocketFuel
-  # Job's artifacts. Artifacts are shared by default.
-  artifacts:
-     - name: Red rocket built
-       pattern: falcon/red/wings
-notifications:
-  - recipients:
-      - users:
-          - bamboo
-    events:
-      - plan-failed
-      - job-error
+build:
+  buildPlan:
+    bitbucketRepo:
+      changeFilter:
+        - ^[A-z.]*[^\/]\.?[A-z]*$
+        - shared/.*
+        - query-servicenow-data-lake.lambda/.*
+      name: resiliency-engineering.monorepo
+      projectKey: MO9
+    key: QSDLMONO
+    name: query-servicenow-data-lake.lambda-MONO
+  config:
+    awsAccount: OPS
+    awsRegion: US_EAST_1
+    buildDescriptorFilename: faas-lambda.yaml
+    buildspecFilename: ../buildspec_common.yaml
+    dockerImageLanguage: NODE18
+    e2especFilename: e2e/e2e-tests.yaml
+    shouldBuildOpaPolicies: false
+    shouldRunSmokeTest: false
+    shouldUseBuildspecEmulation: true
+    subproject: query-servicenow-data-lake.lambda
+  project:
+    key: MO9
+    name: GTO.resiliency-engineering
+  template: FaasSimpleBuildPlanTemplate
+coordinatorGroup: CONTINUOUS DELIVERY
+deployment:
+  config:
+    addDeploySysLevelButtons: true
+    addDisableButtons: true
+    allowedBranches: master,release
+    buildAccount: OPS
+    deployEverywhere: false
+    descriptor: faas-lambda.yaml
+    locations:
+      OPS:
+        - us-east-1
+    productionConfig: CD
+    region: US_EAST_1
+    runConfigurations:
+      - name: test-payload
+        syslevel: ENG
+      - name: test-payload
+        syslevel: INT
+      - name: test-payload
+        syslevel: SAT
+    shouldAddDeleteEnvironments: true
+    subproject: query-servicenow-data-lake.lambda
+    testSysLevels:
+      - INT
+      - SAT
+    triggers:
+      - class: AfterSuccessfulBuildPlanTrigger
+        environmentsToTrigger:
+          - Deploy Lambda vgi-ops-int - us-east-1 - ENG
+          - Deploy Lambda vgi-ops-test - us-east-1 - INT
+          - Deploy Lambda vgi-ops-test - us-east-1 - SAT
+  name: query-servicenow-data-lake.lambda-MONO
+  template: FaasPipelineDeployPlanTemplate
+isCd: true
+mcaRoles:
+  - ROL PRD SERVICENOW ASG GTO PRODUCTION ASSURANCE
+mcaRolesForProd:
+  - ROL PRD SERVICENOW ASG GTO PRODUCTION ASSURANCE
+primaryAwsAccount: OPS
+snowConfigurationItem: MO9-RESILIENCY ENGINEERING
+subdiv: GTO
