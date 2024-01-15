@@ -9,17 +9,7 @@ build:
       project: MO9
     key: QSDLMONO
     name: query-servicenow-data-lake.lambda-MONO
-  config:
-    awsAccount: OPS
-    awsRegion: US_EAST_1
-    buildDescriptorFilename: faas-lambda.yaml
-    buildspecFilename: ../buildspec_common.yaml
-    dockerImageLanguage: NODE18
-    e2especFilename: e2e/e2e-tests.yaml
-    shouldBuildOpaPolicies: false
-    shouldRunSmokeTest: false
-    shouldUseBuildspecEmulation: true
-    subproject: query-servicenow-data-lake.lambda
+  
   project:
     key: MO9
     name: GTO.resiliency-engineering
