@@ -29,6 +29,7 @@ build:
   template: FaasSimpleBuildPlanTemplate
 coordinatorGroup: CONTINUOUS DELIVERY
 deployment:
+source-plan: QSDLMONO
   config:
     addDeploySysLevelButtons: true
     addDisableButtons: true
